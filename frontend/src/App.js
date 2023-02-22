@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import "./App.css";
 
 const App = () => {
@@ -12,15 +13,11 @@ const App = () => {
 
   useEffect(() => {
     let ignore = false;
-    fetch(
-      `https://v6.exchangerate-api.com/v6/ee28c875c5b6be2f4dbc3d5d/latest/USD`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (!ignore) {
-          setCurrencies(Object.keys(data.conversion_rates));
-        }
-      });
+    axios.get(`http://localhost:3001/latest`).then((data) => {
+      if (!ignore) {
+        setCurrencies(Object.keys(data.data.conversion_rates));
+      }
+    });
     return () => {
       ignore = true;
     };
@@ -31,7 +28,7 @@ const App = () => {
       let ignore = false;
       if (!conversionRate) {
         fetch(
-          `https://v6.exchangerate-api.com/v6/ee28c875c5b6be2f4dbc3d5d/pair/${inputCurrency}/${outputCurrency}`
+          `http://localhost:3001/pair?input=${inputCurrency}&output=${outputCurrency}`
         )
           .then((response) => response.json())
           .then((data) => {
@@ -44,7 +41,7 @@ const App = () => {
         };
       }
     },
-    [conversionRate, inputCurrency, outputCurrency]
+    [conversionRate]
   );
 
   const handleClick = () => {
@@ -63,9 +60,8 @@ const App = () => {
     setInputValue(inputValue);
   };
 
-  const handleInputCurrency = (value) => {
-    setConversionRate(null);
-    setInputCurrency(value);
+  const handleInputCurrency = async (value) => {
+    await setInputCurrency(value);
     const outputValue = inputValue * conversionRate;
     setOutputValue(outputValue);
   };

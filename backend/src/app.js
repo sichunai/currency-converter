@@ -1,25 +1,12 @@
-import express from "express";
-import cors from "cors";
-
+const express = require("express"); //load express module
+const cors = require("cors");
 const app = express();
-const PORT = process.env.PORT || 3001;
-const cors = cors();
-
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-  })
-);
-
-app.get(
-  "https://v6.exchangerate-api.com/v6/ee28c875c5b6be2f4dbc3d5d/latest/USD",
-  (req, res) => {
-    res.send("Good luck!");
-  }
-);
-
-app.listen(PORT, () => {
-  console.log(`Server listening on ${PORT}`);
+const currencyMiddleware = require("../src/routes/currency");
+const conversonMiddleware = require("../src/routes/conversion");
+app.use(cors());
+app.use("/latest", currencyMiddleware);
+app.use("/pair", conversonMiddleware);
+app.get("/", (req, res) => {
+  res.send("Hello, World!!");
 });
-
-export default app;
+module.exports = app;
