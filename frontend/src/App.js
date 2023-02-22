@@ -10,6 +10,8 @@ const App = () => {
   const [outputCurrency, setOutputCurrency] = useState("GBP");
   const [inputValue, setInputValue] = useState(null);
   const [outputValue, setOutputValue] = useState(null);
+  const [inputCurrencyChanged, setInputCurrencyChanged] = useState(true);
+  const [outputCurrencyChanged, setOutputCurrencyChanged] = useState(true);
 
   useEffect(() => {
     let ignore = false;
@@ -26,7 +28,7 @@ const App = () => {
   useEffect(
     () => {
       let ignore = false;
-      if (!conversionRate) {
+      if (inputCurrencyChanged || outputCurrencyChanged) {
         fetch(
           `http://localhost:3001/pair?input=${inputCurrency}&output=${outputCurrency}`
         )
@@ -34,6 +36,16 @@ const App = () => {
           .then((data) => {
             if (!ignore) {
               setConversionRate(data.conversion_rate);
+              if (inputCurrencyChanged) {
+                setInputCurrencyChanged(false);
+                const outputValue = inputValue * data.conversion_rate;
+                setOutputValue(outputValue);
+              }
+              if (outputCurrencyChanged) {
+                setOutputCurrencyChanged(false);
+                const inputValue = outputValue / data.conversion_rate;
+                setInputValue(inputValue);
+              }
             }
           });
         return () => {
@@ -41,7 +53,7 @@ const App = () => {
         };
       }
     },
-    [conversionRate]
+    [inputCurrencyChanged, outputCurrencyChanged]
   );
 
   const handleClick = () => {
@@ -60,16 +72,14 @@ const App = () => {
     setInputValue(inputValue);
   };
 
-  const handleInputCurrency = async (value) => {
-    await setInputCurrency(value);
-    const outputValue = inputValue * conversionRate;
-    setOutputValue(outputValue);
+  const handleInputCurrency = (value) => {
+    setInputCurrencyChanged(true);
+    setInputCurrency(value);
   };
 
   const handleOutputCurrency = (value) => {
+    setOutputCurrencyChanged(true);
     setOutputCurrency(value);
-    const inputValue = outputValue / conversionRate;
-    setInputValue(inputValue);
   };
 
   return (
